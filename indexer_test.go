@@ -1,0 +1,82 @@
+package lzo
+
+import (
+	"os"
+	"testing"
+    "encoding/binary"
+)
+
+type lzoTest struct {
+	name  string
+	desc  string
+	raw   string
+	lzo   []byte
+	index []byte
+	err   error
+}
+
+var lzoTests = []lzoTest{
+	{
+		"hello.txt",
+		"hello.txt",
+		"hello world\n",
+		[]byte{
+			0x89, 0x4c, 0x5a, 0x4f, 0x0, 0xd, 0xa, 0x1a, 0xa,
+			0x10, 0x30, 0x20, 0x60, 0x9, 0x40, 0x1, 0x5, 0x3,
+			0x0, 0x0, 0x1, 0x0, 0x0, 0x81, 0xa4, 0x51, 0xcf,
+			0x8a, 0xf, 0x0, 0x0, 0x0, 0x0, 0x9, 0x68, 0x65,
+			0x6c, 0x6c, 0x6f, 0x2e, 0x74, 0x78, 0x74, 0x66,
+			0xe3, 0x7, 0x9d, 0x0, 0x0, 0x0, 0xc, 0x0, 0x0,
+			0x0, 0xc, 0x1e, 0x72, 0x4, 0x67, 0x68, 0x65,
+			0x6c, 0x6c, 0x6f, 0x20, 0x77, 0x6f, 0x72, 0x6c,
+			0x64, 0xa, 0x0, 0x0, 0x0, 0x0,
+		},
+		[]byte{
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2F,
+		},
+		nil,
+	},
+}
+
+
+func TestReader(t *testing.T) {
+	t.Log("Test read head:")
+	lzofile, err := os.Open("pn_2016062322_91_0.log.format.lzo")
+	reader, err := NewIndexer(lzofile)
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(reader.Name)
+	t.Log(reader.version)
+	t.Log(reader.libraryVersion)
+	t.Log(reader.ModTime)
+	t.Log(reader.flags)
+    t.Log(reader.num_compressed_checksums)
+	t.Log(reader.num_decompressed_checksums)
+
+	for {
+		err := reader.findBlock()
+		if err != nil{
+			break
+		}
+	}
+
+	for _, position := range(reader.indexes){
+		t.Log(position)
+	}
+
+
+	lzoindex, err := os.Open("pn_2016062322_91_0.log.format.lzo.index")
+    var tmp []byte = make([]byte, 8)
+	lzoindex.Read(tmp)
+
+	t.Log("index")
+	t.Log(binary.BigEndian.Uint64(tmp))
+
+
+	lzofile2, err := os.Open("pn_2016062322_91_0.log.format.lzo")
+	ttt := make([]byte,1024)
+	lzofile2.Read(ttt)
+	t.Log(ttt)
+
+}
