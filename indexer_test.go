@@ -1,12 +1,12 @@
 package lzo
 
 import (
+	"encoding/binary"
 	"os"
 	"testing"
-    "encoding/binary"
 )
 
-type lzoTest struct {
+type indexTest struct {
 	name  string
 	desc  string
 	raw   string
@@ -15,7 +15,7 @@ type lzoTest struct {
 	err   error
 }
 
-var lzoTests = []lzoTest{
+var indexTests = []indexTest{
 	{
 		"hello.txt",
 		"hello.txt",
@@ -32,16 +32,15 @@ var lzoTests = []lzoTest{
 			0x64, 0xa, 0x0, 0x0, 0x0, 0x0,
 		},
 		[]byte{
-			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2F,
+			0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2F,
 		},
 		nil,
 	},
 }
 
-
-func TestReader(t *testing.T) {
+func TestIndexer(t *testing.T) {
 	t.Log("Test read head:")
-	lzofile, err := os.Open("pn_2016062322_91_0.log.format.lzo")
+	lzofile, err := os.Open("testdata/pg135.txt.lzo")
 	reader, err := NewIndexer(lzofile)
 	if err != nil {
 		t.Error(err)
@@ -51,32 +50,29 @@ func TestReader(t *testing.T) {
 	t.Log(reader.libraryVersion)
 	t.Log(reader.ModTime)
 	t.Log(reader.flags)
-    t.Log(reader.num_compressed_checksums)
+	t.Log(reader.num_compressed_checksums)
 	t.Log(reader.num_decompressed_checksums)
 
 	for {
 		err := reader.findBlock()
-		if err != nil{
+		if err != nil {
 			break
 		}
 	}
 
-	for _, position := range(reader.indexes){
+	for _, position := range reader.indexes {
 		t.Log(position)
 	}
 
-
-	lzoindex, err := os.Open("pn_2016062322_91_0.log.format.lzo.index")
-    var tmp []byte = make([]byte, 8)
+	lzoindex, err := os.Open("testdata/pg135.txt.lzo.index")
+	var tmp []byte = make([]byte, 8)
 	lzoindex.Read(tmp)
 
 	t.Log("index")
 	t.Log(binary.BigEndian.Uint64(tmp))
 
-
-	lzofile2, err := os.Open("pn_2016062322_91_0.log.format.lzo")
-	ttt := make([]byte,1024)
+	lzofile2, err := os.Open("testdata/pg135.txt.lzo.index")
+	ttt := make([]byte, 1024)
 	lzofile2.Read(ttt)
 	t.Log(ttt)
-
 }

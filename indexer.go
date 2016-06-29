@@ -13,43 +13,6 @@ import (
 	"time"
 )
 
-const (
-        // BestSpeed provides speed over better compression.
-        BestSpeed = 3
-        // BestCompression provides better compression over speed.
-        BestCompression    = 9
-        defaultCompression = -1
-        version            = 0x1030
-        flagAdler32D       = 1 << 0
-        flagAdler32C       = 1 << 1
-        flagStdin          = 1 << 2
-        flagStdout         = 1 << 3
-        flagNameDefault    = 1 << 4
-        flagDosish         = 1 << 5
-        flagExtra          = 1 << 6
-        flagGmtDiff        = 1 << 7
-        flagCRC32D         = 1 << 8
-        flagCRC32C         = 1 << 9
-        flagMultipart      = 1 << 10
-        flagFilter         = 1 << 11
-        flagCRC32          = 1 << 12
-        flagPath           = 1 << 13
-        flagMask           = 1 << 14
-)
-
-var (
-        lzoMagic  = []byte{0x89, 0x4c, 0x5a, 0x4f, 0x00, 0x0d, 0x0a, 0x1a, 0x0a}
-        lzoErrors = []string{
-                1: "data corrupted",
-                2: "out of memory",
-                4: "input overrun",
-                5: "output overrun",
-                6: "data corrupted",
-                7: "eof not found",
-                8: "input not consumed",
-        }
-)
-
 // Header metadata about the compressed file.
 // This header is exposed as the fields of the Writer and Reader structs.
 type IndexHeader struct {

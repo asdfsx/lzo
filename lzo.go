@@ -1,7 +1,8 @@
 package lzo
 
 /*
-#cgo LDFLAGS: -llzo2
+#cgo LDFLAGS: -llzo2 -L /usr/local/Cellar/lzo/2.09/lib/
+#cgo CFLAGS: -I /usr/local/Cellar/lzo/2.09/include
 #include <lzo/lzo1x.h>
 
 static int lzo_initialize(void) { return lzo_init(); }
