@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"hash"
 	"hash/adler32"
 	"hash/crc32"
@@ -184,6 +183,12 @@ func (z *Indexer) readHeader() error {
 
 func (z *Indexer) findBlock() error {
 	// Read uncompressed block size
+	var block_start int64
+	block_start, z.err = z.f.Seek(0, os.SEEK_CUR)
+	if z.err != nil {
+		return z.err
+	}
+
 	var dstLen uint32
 	z.err = z.read(&dstLen)
 	if z.err != nil {
@@ -203,24 +208,44 @@ func (z *Indexer) findBlock() error {
 		z.err = errors.New("lzo: data corruption")
 		return z.err
 	}
-
-	num_chksms_to_skip := z.num_decompressed_checksums
-	if dstLen == srcLen {
-		num_chksms_to_skip += z.num_compressed_checksums
+    // Read checksum of uncompressed block
+	var dstChecksum uint32
+	if z.flags&flagAdler32D != 0 {
+		z.err = z.read(&dstChecksum)
+		if z.err != nil {
+			return z.err
+		}
 	}
-
-	skip := 4 * num_chksms_to_skip
-
-	var position int64
-	position, z.err = z.f.Seek(0, os.SEEK_CUR)
-	if z.err != nil {
-		return z.err
+	if z.flags&flagCRC32D != 0 {
+		z.err = z.read(&dstChecksum)
+		if z.err != nil {
+			return z.err
+		}
 	}
-	fmt.Println(position)
-	block_start := position - 8 // Rewind back to before the block headers
-	next_block := position + int64(srcLen) + int64(skip)
+	// Read checksum of compressed block
+	var srcChecksum uint32
+	if z.flags&flagAdler32C != 0 {
+		if srcLen < dstLen {
+			z.err = z.read(&srcChecksum)
+			if z.err != nil {
+				return z.err
+			}
+		} else {
+			srcChecksum = dstChecksum
+		}
+	}
+	if z.flags&flagCRC32C != 0 {
+		if srcLen < dstLen {
+			z.err = z.read(&srcChecksum)
+			if z.err != nil {
+				return z.err
+			}
+		} else {
+			srcChecksum = dstChecksum
+		}
+	}
 	z.indexes = append(z.indexes, block_start)
-	z.f.Seek(next_block, os.SEEK_SET)
+	z.f.Seek(int64(srcLen), os.SEEK_CUR)
 	return nil
 }
 
@@ -248,7 +273,7 @@ func CreateIndex(filename string) error {
 	}
 	if indexer.err == io.EOF {
 		for _, num := range indexer.indexes {
-			tmp := []byte{}
+			tmp := make([]byte,8)
 			binary.BigEndian.PutUint64(tmp, uint64(num))
 			indexfile.Write(tmp)
 		}
