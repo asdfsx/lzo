@@ -273,9 +273,10 @@ func CreateIndex(filename string) error {
 	}
 	if indexer.err == io.EOF {
 		for _, num := range indexer.indexes {
-			tmp := make([]byte,8)
-			binary.BigEndian.PutUint64(tmp, uint64(num))
-			indexfile.Write(tmp)
+			//tmp := make([]byte,8)
+			//binary.BigEndian.PutUint64(tmp, uint64(num))
+			//indexfile.Write(tmp)
+                        binary.Write(indexfile, binary.BigEndian, uint64(num))
 		}
 	} else {
 		return indexer.err
