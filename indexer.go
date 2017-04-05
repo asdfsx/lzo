@@ -208,7 +208,7 @@ func (z *Indexer) findBlock() error {
 		z.err = errors.New("lzo: data corruption")
 		return z.err
 	}
-    // Read checksum of uncompressed block
+	// Read checksum of uncompressed block
 	var dstChecksum uint32
 	if z.flags&flagAdler32D != 0 {
 		z.err = z.read(&dstChecksum)
@@ -276,7 +276,7 @@ func CreateIndex(filename string) error {
 			//tmp := make([]byte,8)
 			//binary.BigEndian.PutUint64(tmp, uint64(num))
 			//indexfile.Write(tmp)
-                        binary.Write(indexfile, binary.BigEndian, uint64(num))
+			binary.Write(indexfile, binary.BigEndian, num)
 		}
 	} else {
 		return indexer.err

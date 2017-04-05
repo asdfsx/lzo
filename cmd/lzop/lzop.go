@@ -35,8 +35,8 @@ func decompress(path string) error {
 	return nil
 }
 
-func createindex(path string) error{
-    err := lzo.CreateIndex(path)
+func createindex(path string) error {
+	err := lzo.CreateIndex(path)
 	if err != nil {
 		return err
 	}
