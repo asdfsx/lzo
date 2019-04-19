@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/asdfsx/lzo"
+	"github.com/cyberdelia/lzo"
 )
 
 var (
@@ -23,7 +23,7 @@ func decompress(path string) error {
 	decompressor, err := lzo.NewReader(input)
 	if err != nil {
 		return err
-	}
+	}cyberdelia
 	output, err := os.Create(decompressor.Name)
 	if err != nil {
 		return err
